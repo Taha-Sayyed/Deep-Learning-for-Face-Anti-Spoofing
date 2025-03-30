@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-import model_c
+import model_testc
 from PIL import Image
 import matplotlib.pyplot as plt
 
@@ -30,7 +30,7 @@ def evaluate_one_image():
         image = tf.image.per_image_standardization(image)
         image = tf.reshape(image, [1, 96, 96, 3])
         
-        logit = model_c.inference(image, BATCH_SIZE, N_CLASSES,1.0)
+        logit = model_testc.inference(image, BATCH_SIZE, N_CLASSES,1.0)
         
         logit = tf.nn.softmax(logit)
         
