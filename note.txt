@@ -1,0 +1,12 @@
+To Run Python 3.7 directly using: C:\Python37\python.exe
+To check the version: C:\Python37\python.exe --version
+
+
+If you want to use Python 3.7 only in a specific project, create a virtual environment:
+C:\Python37\python.exe -m venv myenv
+
+
+
+If you have installed multiple Python versions, you can use: py -3.7
+Or set Python 3.7 as the default: py -3.7 myscript.py
+
