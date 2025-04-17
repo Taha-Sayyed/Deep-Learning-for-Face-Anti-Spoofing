@@ -2,8 +2,9 @@ import cv2
 import os
 import app_console
 
-Video_dir = '/Users/taha/Desktop/Antispoofing Dataset/CASIA_faceAntisp/train_release/' 
-store_dir = '/Users/taha/Desktop/Antispoofing Dataset/CASIA_faceAntisp/frame/train_release/'
+Video_dir = r'C:\Users\Hootone Tahir\Desktop\TE Project\Antispoofing Dataset\CASIA_faceAntisp\train_release'
+ 
+store_dir = r'C:\Users\Hootone Tahir\Desktop\TE Project\Antispoofing Dataset\CASIA_faceAntisp\frames\train_release'
 
 
 real_count = 0
