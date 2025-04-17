@@ -20,8 +20,9 @@ learning_rate = 0.0001
 def run_training():
     
 
-    train_dir = 'D:\\database\\train\\'   
-    logs_train_dir = 'D:\\train_myself\\model_testc\\'  
+    train_dir = r'C:\Users\Hootone Tahir\Desktop\TE Project\Antispoofing Dataset\CASIA_faceAntisp\frames\train_release'
+    logs_train_dir = r'C:\Users\Hootone Tahir\Desktop\TE Project\Antispoofing Dataset\CASIA_faceAntisp\model_testc'
+
     
     train, train_label = input_getbatch.get_files(train_dir)    
     train_batch, train_label_batch = input_getbatch.get_batch(train,
