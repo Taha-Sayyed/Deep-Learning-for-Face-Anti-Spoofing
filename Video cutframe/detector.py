@@ -5,7 +5,7 @@ import os
 
 DEFAULT_DATA_FILENAME = os.path.join(
     os.path.split(os.path.realpath(__file__))[0],
-    'haarcascade_frontalface_default.xml 的路径地址'
+    'haarcascade_frontalface_default.xml'
     )
 
 class Detector(object):
