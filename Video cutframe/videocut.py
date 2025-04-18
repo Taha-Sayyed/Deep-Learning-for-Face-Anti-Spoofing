@@ -2,71 +2,83 @@ import cv2
 import os
 import app_console
 
-Video_dir = r'C:\Users\Hootone Tahir\Desktop\TE Project\Antispoofing Dataset\CASIA_faceAntisp\train_release'
- 
-store_dir = r'C:\Users\Hootone Tahir\Desktop\TE Project\Antispoofing Dataset\CASIA_faceAntisp\frames\train_release'
+Video_dir = r'C:\Users\Hootone Tahir\Desktop\TE Project\Deep-Learning-for-Face-Anti-Spoofing\Revised_train_release\\'
+store_dir = r'C:\Users\Hootone Tahir\Desktop\TE Project\Deep-Learning-for-Face-Anti-Spoofing\frames\train_set\\'
 
+# Ensure output directory exists
+os.makedirs(store_dir, exist_ok=True)
 
 real_count = 0
 fake_count = 0
 
-# List all subdirectories in Video_dir (each representing a person)
-person_dirs = [d for d in os.listdir(Video_dir) if os.path.isdir(os.path.join(Video_dir, d))]
-
-
-# Process each person directory
-for person in person_dirs:
-    person_path = os.path.join(Video_dir, person)
-    # List all .avi files in this person's directory
-    video_files = [f for f in os.listdir(person_path) if f.endswith('.avi')]
+for i in range(1, 240):
+    video_path = Video_dir + str(i) + '.avi'
     
-    for video_file in video_files:
-        video_path = os.path.join(person_path, video_file)
-        vc = cv2.VideoCapture(video_path)
+    # Check if video file exists
+    if not os.path.exists(video_path):
+        print(f"Video file {video_path} does not exist. Skipping.")
+        continue
+    
+    # First pass: count frames
+    vc = cv2.VideoCapture(video_path)
+    if not vc.isOpened():
+        print(f"Could not open video {video_path}. Skipping.")
+        continue
         
-        # Count total frames
-        frame_count = 0
-        flag, frame = vc.read()
-        while flag:
-            frame_count += 1
-            flag, frame = vc.read()
-        vc.release()
-        
-        if frame_count == 0:
-            print(f"No frames found in {video_path}. Skipping...")
-            continue
-        
-        print(f"{video_file} in folder {person} has {frame_count} frames.")
-        gap = frame_count // 20  # Extract 20 frames evenly
-        if gap == 0:
-            gap = 1  # In case the video is very short
-        
-        c = 1  # Frame counter
-        
-        vc = cv2.VideoCapture(video_path)
-        flag, frame = vc.read()
-        while flag:
-            if c % gap == 0:
-                # Determine cropping dimensions based on person folder name and/or video file
-                # Here, we assume that person folders "1" and "2" (and optionally "3") are 'real'
-                # and folders "4", "5", etc., are 'fake'. Adjust these conditions as needed.
-                if int(person) <= 3:
-                    if int(person) <= 2:
-                        target_image = app_console.face_crop(frame, 240, 240)
+    frame_count = 0
+    while True:
+        ret, frame = vc.read()
+        if not ret or frame is None:
+            break
+        frame_count += 1
+    vc.release()
+    
+    print(f"Video {i}.avi has {frame_count} frames")
+    
+    # Skip videos with no frames
+    if frame_count == 0:
+        print(f"Video {i}.avi has no frames. Skipping.")
+        continue
+    
+    # Calculate frame sampling interval
+    gap = max(frame_count // 20, 1)  # Ensure gap is at least 1
+    
+    # Second pass: extract frames
+    vc = cv2.VideoCapture(video_path)
+    frame_index = 0
+    
+    while True:
+        ret, frame = vc.read()
+        if not ret or frame is None:
+            break
+            
+        if frame_index % gap == 0:
+            try:
+                # Use 400x400 dimensions to ensure more of the face is captured
+                # The cropper will handle scaling based on actual face size
+                target_image = app_console.face_crop(frame, 400, 400)
+                
+                if target_image is not None:
+                    # Make sure the image is not too small
+                    if target_image.shape[0] > 100 and target_image.shape[1] > 100:
+                        if i <= 61:
+                            output_path = store_dir + 'real.' + str(real_count) + '.png'
+                            cv2.imwrite(output_path, target_image)
+                            real_count += 1
+                        else:
+                            output_path = store_dir + 'fake.' + str(fake_count) + '.png'
+                            cv2.imwrite(output_path, target_image)
+                            fake_count += 1
                     else:
-                        target_image = app_console.face_crop(frame, 600, 800)
-                    image_name = os.path.join(store_dir, f"real.{real_count}.png")
-                    real_count += 1
+                        print(f"Cropped image too small for frame {frame_index} in video {i}.avi")
                 else:
-                    if int(person) <= 9:
-                        target_image = app_console.face_crop(frame, 240, 240)
-                    else:
-                        target_image = app_console.face_crop(frame, 600, 800)
-                    image_name = os.path.join(store_dir, f"fake.{fake_count}.png")
-                    fake_count += 1
-                    
-                cv2.imwrite(image_name, target_image)
-            c += 1
-            flag, frame = vc.read()
-        vc.release()
-        cv2.waitKey(1)
+                    print(f"Face cropping failed for frame {frame_index} in video {i}.avi")
+            except Exception as e:
+                print(f"Error processing frame {frame_index} in video {i}.avi: {str(e)}")
+                
+        frame_index += 1
+        
+    vc.release()
+    print(f"Processed video {i}.avi: extracted {frame_index//gap} frames")
+
+print(f"Total frames extracted: {real_count} real, {fake_count} fake")
