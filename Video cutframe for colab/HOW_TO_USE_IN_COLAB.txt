@@ -1,0 +1,142 @@
+HOW TO USE THE FACE EXTRACTION CODE IN GOOGLE COLAB
+===================================================
+
+There are two approaches to using these files in Google Colab:
+
+APPROACH 1: Use the Python Script directly
+------------------------------------------
+
+1. Upload the Python script (face_extraction_colab.py) to a Colab notebook using:
+   ```python
+   from google.colab import files
+   uploaded = files.upload()  # Upload face_extraction_colab.py
+   ```
+
+2. Run the script:
+   ```python
+   %run face_extraction_colab.py
+   ```
+
+3. Follow the interactive prompts in the script.
+
+
+APPROACH 2: Create a New Colab Notebook
+--------------------------------------
+
+1. Go to Google Colab (https://colab.research.google.com/)
+
+2. Create a new notebook
+
+3. Add a cell for importing libraries:
+   ```python
+   import os
+   import glob
+   import cv2
+   import time
+   from google.colab import files, drive
+   import matplotlib.pyplot as plt
+   import random
+   
+   print("OpenCV version:", cv2.__version__)
+   print("Setup complete!")
+   ```
+
+4. Add a cell for uploading the Python files:
+   ```python
+   print("Please upload the required Python files (app_console.py, cropper.py, detector.py, videocut_colab.py)")
+   uploaded = files.upload()
+   print(f"\nUploaded {len(uploaded)} files: {list(uploaded.keys())}")
+   ```
+
+5. Add a cell for mounting Google Drive (optional):
+   ```python
+   from videocut_colab import extract_frames, mount_drive, upload_videos, download_results
+   
+   # Mount Google Drive
+   mount_drive()
+   ```
+
+6. Add a cell for defining directories:
+   ```python
+   # Option 1: If your videos are in Google Drive
+   # VIDEO_DIR = "/content/drive/MyDrive/your_videos_folder"  # Change to your directory
+   
+   # Option 2: If uploading videos directly to Colab
+   VIDEO_DIR = "/content/videos"
+   os.makedirs(VIDEO_DIR, exist_ok=True)
+   
+   # Directory to store extracted frames
+   STORE_DIR = "/content/extracted_frames"
+   os.makedirs(STORE_DIR, exist_ok=True)
+   
+   print(f"Video directory: {VIDEO_DIR}")
+   print(f"Frame storage directory: {STORE_DIR}")
+   ```
+
+7. Add a cell for uploading videos:
+   ```python
+   # Upload videos
+   print("Please upload your video files (named 1.avi, 2.avi, etc.)")
+   uploaded_videos = files.upload()
+   
+   # Save uploaded videos to the videos directory
+   for filename, content in uploaded_videos.items():
+       with open(os.path.join(VIDEO_DIR, filename), 'wb') as f:
+           f.write(content)
+           
+   print(f"\nUploaded {len(uploaded_videos)} videos to {VIDEO_DIR}")
+   print(f"Video files: {list(uploaded_videos.keys())}")
+   ```
+
+8. Add a cell for extracting faces:
+   ```python
+   # Extract faces from videos
+   # You can adjust max_videos parameter if you have fewer videos
+   results = extract_frames(VIDEO_DIR, STORE_DIR, max_videos=240)
+   
+   # Show results
+   print(f"\nExtraction completed with {results['total_frames']} frames extracted:")
+   print(f"  - Real frames: {results['real_frames']}")
+   print(f"  - Fake frames: {results['fake_frames']}")
+   print(f"  - Videos processed: {results['videos_processed']}")
+   print(f"  - Videos skipped: {results['videos_skipped']}")
+   ```
+
+9. Add a cell for downloading the extracted frames:
+   ```python
+   # Download the extracted frames as a zip file
+   download_results(STORE_DIR)
+   ```
+
+10. Add a cell for viewing sample frames:
+    ```python
+    # Find all PNG files in the output directory
+    frame_files = glob.glob(os.path.join(STORE_DIR, "*.png"))
+    
+    # Display some random samples if files exist
+    if frame_files:
+        # Select up to 5 random samples
+        samples = random.sample(frame_files, min(5, len(frame_files))
+        
+        plt.figure(figsize=(15, 4))
+        for i, sample in enumerate(samples):
+            plt.subplot(1, len(samples), i+1)
+            img = cv2.imread(sample)
+            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert BGR to RGB
+            plt.imshow(img_rgb)
+            plt.title(os.path.basename(sample))
+            plt.axis('off')
+        plt.tight_layout()
+        plt.show()
+    else:
+        print("No frames found to display")
+    ```
+
+Run the cells in order by clicking the play button next to each cell or by pressing Shift+Enter.
+
+Important Notes:
+---------------
+1. The code expects videos to be named 1.avi, 2.avi, etc.
+2. Videos 1-61 will be labeled as "real", videos 62-240 as "fake"
+3. Each video will have approximately 20 frames extracted
+4. You need to upload all four Python files (app_console.py, cropper.py, detector.py, videocut_colab.py) before running the extraction code 
